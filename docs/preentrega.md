@@ -1,8 +1,8 @@
 # Preentrega — Centinela Go2
 
-> Los datos técnicos del Go2 de este documento son los que publica el fabricante según nuestro
-> relevamiento; **hay que verificarlos contra las fuentes de la sección 7 antes de entregar**, porque
-> cambian según la versión (Air / Pro / EDU) y la revisión del producto.
+> Los datos técnicos del Go2 de este documento se verificaron contra la página oficial de Unitree y
+> sus repositorios el 16/11/2026. Cambian según la versión (Air / Pro / X / EDU) y la revisión del
+> producto.
 
 ## 1. Problema
 
@@ -90,16 +90,22 @@ que abrir puertas con picaporte o manipular objetos.
 **Por qué la versión EDU.** Es la que admite desarrollo propio (SDK y ROS 2) y cómputo adicional a
 bordo; las versiones Air y Pro están pensadas para control desde la app del fabricante.
 
-| Característica (Go2, según fabricante — verificar) | Valor aproximado |
+| Característica (Go2 EDU, según la página del fabricante) | Valor publicado |
 |---|---|
-| Peso | ~15 kg |
-| Sensores de serie | LiDAR 4D (L1) de 360° × 90°, cámara frontal gran angular, IMU |
-| Velocidad | ~2,5 m/s (Air) a ~3,7 m/s (EDU); la ronda usa 1,5 m/s |
-| Autonomía | 1–2 h con batería estándar (8000 mAh); 2–4 h con batería de larga duración (15000 mAh) |
-| Carga útil | ~7–8 kg |
-| Movilidad | Escalones y desniveles moderados (~15 cm), pendientes hasta ~30–40° |
-| Conectividad | Wi‑Fi y Bluetooth; 4G según versión |
-| Desarrollo | `unitree_sdk2` (C++/Python) sobre DDS, compatible con ROS 2 (EDU) |
+| Peso con batería | Aprox. 15 kg |
+| Dimensiones de pie | 70 × 31 × 40 cm |
+| Sensores de serie | LiDAR 4D L2 (360° × 96°, detección desde 0,05 m), cámara HD gran angular; la EDU suma cámara de profundidad y sensores de fuerza en las patas |
+| Velocidad | 0–3,7 m/s (máx. ~5 m/s); Air 2,5 m/s, Pro 3,5 m/s. La ronda usa 1,5 m/s |
+| Batería y autonomía | EDU: batería de larga duración de 15000 mAh, aprox. 2–4 h, cargador rápido (33,6 V, 9 A). Air/Pro/X: 8000 mAh, aprox. 1–2 h |
+| Carga útil | ≈ 8 kg (máx. ~12 kg) |
+| Movilidad | Escalones de aprox. 16 cm, pendientes de hasta 40° |
+| Cómputo | CPU de 8 núcleos de serie; la EDU admite un módulo de alto cómputo (p. ej. NVIDIA Orin, 40–100 TOPS) |
+| Conectividad | Wi‑Fi 6 de doble banda, Bluetooth 5.2; módulo 4G con GPS (Pro, X y EDU) |
+| Desarrollo | Desarrollo secundario completo solo en EDU. `unitree_sdk2` (C++) y `unitree_sdk2_python` sobre DDS (CycloneDDS); `unitree_ros2` permite usar mensajes ROS 2 directamente |
+| Base de carga | Compatible con base de carga en las versiones X y EDU |
+
+Fuente: <https://www.unitree.com/go2> y los repositorios oficiales, consultados el 16/11/2026. El
+fabricante aclara que los valores pueden variar según el escenario y la configuración.
 
 **Restricciones.** Autonomía limitada (hay que planificar recargas entre rondas); no es apto para
 lluvia intensa ni polvo abundante sin protección adicional; no abre puertas; la cámara de serie tiene
@@ -110,10 +116,10 @@ rendimiento limitado con poca luz.
 | Caminar, evitar obstáculos, telemetría básica (batería, IMU, estado) | Sí |
 | Control por SDK de alto nivel (velocidad, posturas) | Sí (EDU) |
 | Navegación autónoma por puntos en un mapa de la nave | **Requiere desarrollo**: mapeo y localización (SLAM) y planificador sobre ROS 2 |
-| Detección de personas | **Requiere desarrollo y cómputo**: modelo de visión en un módulo tipo Jetson |
+| Detección de personas | **Requiere desarrollo y cómputo**: modelo de visión en el módulo de alto cómputo (tipo Orin) |
 | Visión nocturna confiable | **Requiere equipamiento**: cámara térmica o iluminación IR |
 | Medir temperatura ambiente | **Requiere equipamiento**: sensor adicional |
-| Regreso y acople automático a la base de carga | **Requiere equipamiento**: base de carga automática y su integración |
+| Regreso y acople automático a la base de carga | **Requiere equipamiento**: la EDU es compatible con la base de carga del fabricante, que se compra aparte y hay que integrar con la navegación |
 | Parada de emergencia remota certificada | **Requiere equipamiento**; la app no la reemplaza |
 
 ## 6. Telemetría y comandos
@@ -155,5 +161,6 @@ Riesgos: ver [`riesgos.md`](riesgos.md). Flujos del Figma: ver [`figma.md`](figm
 - Unitree Robotics — página de producto del Go2: <https://www.unitree.com/go2>
 - Unitree — centro de documentación para desarrolladores del Go2: <https://support.unitree.com/home/en/developer>
 - `unitree_sdk2` (SDK oficial): <https://github.com/unitreerobotics/unitree_sdk2>
+- `unitree_sdk2_python` (SDK oficial para Python): <https://github.com/unitreerobotics/unitree_sdk2_python>
 - `unitree_ros2` (integración con ROS 2): <https://github.com/unitreerobotics/unitree_ros2>
 - Unitree — página de producto del G1 (para la comparación): <https://www.unitree.com/g1>
