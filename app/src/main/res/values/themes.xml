@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.RobotHmi" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/bg</item>
+    </style>
+    <color name="bg">#0E1318</color>
+    <color name="accent">#4FD1C5</color>
+</resources>
