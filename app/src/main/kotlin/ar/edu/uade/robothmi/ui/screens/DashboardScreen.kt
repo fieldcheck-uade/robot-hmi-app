@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ar.edu.uade.robothmi.model.Alert
@@ -61,6 +62,21 @@ fun Telemetry.stateLabel(): String = when {
     opState == OperationalState.IDLE && atSafePoint -> "En base · listo"
     opState == OperationalState.IDLE -> "En espera fuera de base"
     else -> opState.label
+}
+
+/**
+ * Color of the operational state title.
+ * Old data is shown muted, an idle robot uses the normal text color,
+ * and any other state uses the color of its tone.
+ */
+private fun operationalStateColor(telemetry: Telemetry, isDataStale: Boolean): Color {
+    if (isDataStale) {
+        return Hmi.TextMuted
+    }
+    if (telemetry.opState == OperationalState.IDLE) {
+        return Hmi.Text
+    }
+    return telemetry.opState.tone().color
 }
 
 /** Acciones que la interfaz ofrece junto a cada alerta, según su tipo. */
@@ -110,7 +126,7 @@ fun DashboardScreen(state: UiState, request: (UiEvent.SendCommand) -> Unit, onEv
                             t.stateLabel(),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (stale) Hmi.TextMuted else t.opState.tone().color.takeIf { t.opState != OperationalState.IDLE } ?: Hmi.Text,
+                            color = operationalStateColor(telemetry = t, isDataStale = stale),
                         )
                     }
                     if (stale) StatusChip("Dato antiguo", Tone.WARN, Icons.Filled.Update)
