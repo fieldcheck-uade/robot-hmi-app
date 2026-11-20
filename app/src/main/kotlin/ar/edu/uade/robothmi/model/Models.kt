@@ -93,7 +93,7 @@ enum class AlertSeverity(val label: String) {
     CRITICAL("Crítica"),
 }
 
-enum class AlertType { LOW_BATTERY, CRITICAL_BATTERY, OBSTACLE, INTRUDER, CONNECTION_LOST }
+enum class AlertType { LOW_BATTERY, CRITICAL_BATTERY, OBSTACLE, INTRUDER, UNSUPERVISED_PAUSE, CONNECTION_LOST }
 
 data class Alert(
     val id: Long,

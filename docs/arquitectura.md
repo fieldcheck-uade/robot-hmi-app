@@ -63,8 +63,10 @@ flowchart TD
 - Cada segundo avanza `RobotSimulator.tick()` y, si el enlace está activo, publica un `Telemetry`
   nuevo y entrega los eventos del robot (alertas, cambios de misión).
 - Con el enlace cortado **el robot sigue funcionando** pero la app deja de recibir datos. A los 3 s
-  sin telemetría la conexión pasa a `LOST` y se genera una alerta local. Al volver el enlace llegan
-  juntos el estado actual y lo ocurrido durante el corte.
+  sin telemetría la conexión pasa a `LOST` y se genera una alerta local. El robot también nota el
+  corte (`RobotSimulator.setOperatorLink`): a los 10 s pausa la ronda y deja en cola una alerta
+  `UNSUPERVISED_PAUSE` que pide decisión. Al volver el enlace llegan juntos el estado actual y lo
+  ocurrido durante el corte.
 - Una orden tarda 0,5–1,1 s en responder. Si el enlace está caído se esperan 5 s y queda **sin
   respuesta**. Si no, decide el robot (`RobotSimulator.handle`), que puede **rechazarla** según su
   estado real, o por el interruptor "Rechazar órdenes" del panel de simulación.

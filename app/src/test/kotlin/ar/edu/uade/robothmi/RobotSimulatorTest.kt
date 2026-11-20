@@ -120,6 +120,52 @@ class RobotSimulatorTest {
     }
 
     @Test
+    fun `sin enlace el robot pausa la ronda y espera decision`() {
+        val sim = newSim()
+        sim.send(CommandType.START_MISSION, "ronda-perimetral")
+        sim.run(5)
+        sim.drainEvents()
+
+        sim.setOperatorLink(false)
+        sim.run(RobotSimulator.LINK_LOSS_PAUSE_S.toInt() - 1)
+        assertEquals(OperationalState.PATROLLING, sim.state) // un corte breve no interrumpe la ronda
+
+        sim.run(1)
+        assertEquals(OperationalState.WAITING_OPERATOR, sim.state)
+        assertEquals(listOf(AlertType.UNSUPERVISED_PAUSE), sim.alertTypes())
+        val stopped = sim.snapshot(now)
+        sim.run(20)
+        assertEquals(stopped.x, sim.snapshot(now).x, 0.001f)
+        assertEquals(MissionState.PAUSED, sim.snapshot(now).mission!!.state)
+        assertTrue(sim.alertTypes().isEmpty()) // avisa una sola vez
+
+        sim.setOperatorLink(true)
+        assertEquals(CommandOutcome.Accepted, sim.send(CommandType.RESUME_MISSION))
+        assertEquals(OperationalState.PATROLLING, sim.state)
+    }
+
+    @Test
+    fun `sin enlace el regreso a base no se interrumpe y la bateria critica lo trae de vuelta`() {
+        val returning = newSim()
+        returning.send(CommandType.START_MISSION, "ronda-perimetral")
+        returning.run(8)
+        returning.send(CommandType.RETURN_TO_SAFE_POINT)
+        returning.setOperatorLink(false)
+        returning.run(RobotSimulator.LINK_LOSS_PAUSE_S.toInt() + 2)
+        assertTrue(returning.state == OperationalState.RETURNING || returning.snapshot(now).atSafePoint)
+
+        val paused = newSim()
+        paused.send(CommandType.START_MISSION, "ronda-perimetral")
+        paused.run(8)
+        paused.setOperatorLink(false)
+        paused.run(RobotSimulator.LINK_LOSS_PAUSE_S.toInt())
+        assertEquals(OperationalState.WAITING_OPERATOR, paused.state)
+        paused.forceLowBattery()
+        repeat(1000) { if (paused.state != OperationalState.RETURNING) paused.run(1) }
+        assertEquals(OperationalState.RETURNING, paused.state)
+    }
+
+    @Test
     fun `reglas de habilitacion de la interfaz`() {
         val sim = newSim()
         val atBase = sim.snapshot(now)
