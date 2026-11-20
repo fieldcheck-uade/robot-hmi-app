@@ -46,6 +46,10 @@ app/src/main/kotlin/ar/edu/uade/robothmi/
 
 ## Pendiente del grupo
 
-- Prototipo navegable en **Figma** (la guía en `docs/figma.md` describe pantallas, componentes y flujos).
-- **Video** de demostración (el guion está en `docs/escenarios.md`).
-- Revisar las especificaciones del Go2 contra las fuentes citadas en `docs/preentrega.md` antes de entregar.
+Cada pendiente tiene su issue en GitHub:
+
+- [#2](https://github.com/fieldcheck-uade/robot-hmi-app/issues/2) Prototipo navegable en **Figma** (guía en `docs/figma.md`).
+- [#3](https://github.com/fieldcheck-uade/robot-hmi-app/issues/3) **Video** de demostración (guion en `docs/escenarios.md`).
+- [#4](https://github.com/fieldcheck-uade/robot-hmi-app/issues/4) Decidir qué hace el robot cuando pierde la conexión.
+- [#5](https://github.com/fieldcheck-uade/robot-hmi-app/issues/5) Revisión del equipo de lo mergeado en el PR #1.
+- [#6](https://github.com/fieldcheck-uade/robot-hmi-app/issues/6) Publicar el APK para la entrega.
