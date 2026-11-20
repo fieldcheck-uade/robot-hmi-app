@@ -139,7 +139,8 @@ class SimulatedRobotRepository(
         while (scope.isActive) {
             delay(TICK_MS)
             val now = clock()
-            // El robot sigue funcionando aunque la app no lo vea.
+            // El robot sigue funcionando aunque la app no lo vea; él también nota el corte.
+            simulator.setOperatorLink(!_settings.value.linkDown)
             simulator.tick(TICK_MS / 1000f, now)
 
             if (!_settings.value.linkDown) {
@@ -163,7 +164,8 @@ class SimulatedRobotRepository(
             severity = AlertSeverity.CRITICAL,
             title = "Conexión perdida",
             detail = "Sin telemetría hace más de ${LINK_TIMEOUT_MS / 1000} s. Los datos en pantalla son antiguos " +
-                "y las órdenes pueden no llegar. El robot continúa su tarea de forma autónoma.",
+                "y las órdenes pueden no llegar. Si el corte dura ${RobotSimulator.LINK_LOSS_PAUSE_S.toInt()} s, " +
+                "el robot pausa la ronda en el lugar y espera; con batería crítica regresa solo a la base.",
             timestampMs = now,
         )
         _alerts.update { listOf(alert) + it }

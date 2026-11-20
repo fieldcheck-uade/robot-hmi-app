@@ -36,10 +36,14 @@ Evidencia: `02-bateria-baja.png`.
    alerta *Conexión perdida*.
 3. Las órdenes de misión quedan deshabilitadas ("Sin conexión: datos desactualizados"). Tocar
    **Detener**: queda *pendiente* y a los 5 s pasa a **sin respuesta** ("No se sabe si la orden llegó").
-4. Panel de simulación → desactivar **Cortar el enlace**: vuelve *Conectado*, la telemetría salta al
-   estado real (el robot siguió avanzando) y el historial registra "Conexión recuperada tras N s".
+4. Esperar al menos 10 s con el enlace cortado: el robot pausa la ronda por su cuenta, pero la app
+   todavía no lo sabe (sigue mostrando el último dato).
+5. Panel de simulación → desactivar **Cortar el enlace**: vuelve *Conectado*, la telemetría salta al
+   estado real (*Esperando decisión*, misión *Pausada*, en el punto donde se detuvo), llega la
+   alerta **Ronda pausada sin supervisión** y el historial registra "Conexión recuperada tras N s".
+6. El operador elige: **Reanudar ronda**, **Regresar a base** o **Cancelar misión**.
 
-Evidencia: `03-desconexion.png`.
+Evidencias: `03-desconexion.png` (sin enlace) y `03b-reconexion-ronda-pausada.png` (al reconectar).
 
 ## 4. Incidente: obstáculo
 

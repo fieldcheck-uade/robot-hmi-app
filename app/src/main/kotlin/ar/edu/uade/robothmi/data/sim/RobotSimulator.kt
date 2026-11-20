@@ -86,6 +86,8 @@ class RobotSimulator(
     private var checkpointsInspectedShift = 0
     private var seq = 0L
     private var elapsed = 0f
+    private var operatorLinkUp = true
+    private var secondsWithoutLink = 0f
     private val events = mutableListOf<SimEvent>()
 
     private val atBase: Boolean get() = SiteMap.distanceToBase(x, y) < 0.5f
@@ -95,6 +97,7 @@ class RobotSimulator(
 
     fun tick(dtSeconds: Float, nowMs: Long) {
         elapsed += dtSeconds
+        superviseLink(dtSeconds, nowMs)
         when (state) {
             OperationalState.PATROLLING -> advanceMission(dtSeconds, nowMs)
             OperationalState.RETURNING -> {
@@ -111,6 +114,32 @@ class RobotSimulator(
             else -> speed = 0f
         }
         updateBattery(dtSeconds, nowMs)
+    }
+
+    /**
+     * El robot también nota que perdió el enlace con la app (deja de recibir el latido del operador).
+     * Una ronda sin supervisión no debe seguir: tras [LINK_LOSS_PAUSE_S] s pausa en el lugar y espera.
+     * Si la batería llega a nivel crítico, [updateBattery] lo manda de vuelta a la base igual.
+     */
+    fun setOperatorLink(up: Boolean) {
+        operatorLinkUp = up
+        if (up) secondsWithoutLink = 0f
+    }
+
+    private fun superviseLink(dt: Float, nowMs: Long) {
+        if (operatorLinkUp) return
+        val before = secondsWithoutLink
+        secondsWithoutLink += dt
+        if (before >= LINK_LOSS_PAUSE_S || secondsWithoutLink < LINK_LOSS_PAUSE_S) return
+        if (state != OperationalState.PATROLLING) return
+        interruptForDecision()
+        events += SimEvent.AlertRaised(
+            nowMs, AlertType.UNSUPERVISED_PAUSE, AlertSeverity.WARNING,
+            "Ronda pausada sin supervisión",
+            "El robot perdió el enlace con la app durante ${LINK_LOSS_PAUSE_S.toInt()} s y se detuvo en " +
+                "${SiteMap.zoneAt(x, y)} a esperar. Decidir si reanuda la ronda, regresa a la base o la cancela.",
+            requiresDecision = true,
+        )
     }
 
     private fun advanceMission(dt: Float, nowMs: Long) {
@@ -379,5 +408,6 @@ class RobotSimulator(
         const val LOW_BATTERY = 20f
         const val CRITICAL_BATTERY = 10f
         const val MIN_BATTERY_TO_START = 25f
+        const val LINK_LOSS_PAUSE_S = 10f
     }
 }

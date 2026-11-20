@@ -115,7 +115,8 @@ Alerta:
 }
 ```
 
-- `alert_type`: `low_battery` · `critical_battery` · `obstacle` · `intruder`
+- `alert_type`: `low_battery` · `critical_battery` · `obstacle` · `intruder` · `unsupervised_pause`
+  (el robot pausó la ronda tras 10 s sin enlace; se entrega al reconectar y pide decisión)
 - `severity`: `info` · `warning` · `critical`
 - La alerta de conexión perdida no viaja por este canal: la genera la app.
 - Por privacidad, la alerta `intruder` no incluye imágenes ni datos que identifiquen a la persona.

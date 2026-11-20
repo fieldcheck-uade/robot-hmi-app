@@ -14,8 +14,14 @@
    real siempre se lee de la telemetría, y la interfaz lo dice de forma explícita.
 6. **Doble validación.** `CommandRules` habilita o no los botones; el robot (simulador) vuelve a
    validar contra su estado real y puede rechazar. Las reglas de la app son una ayuda, no la autoridad.
-7. **El robot sigue la ronda si se corta el enlace** y vuelve solo con batería crítica. Lo ocurrido
-   durante el corte se entrega al reconectar.
+7. **Sin enlace, el robot pausa la ronda y espera** ([#4](https://github.com/fieldcheck-uade/robot-hmi-app/issues/4)).
+   Un corte breve (menos de 10 s) no interrumpe nada. Si dura más, el robot se detiene en el lugar
+   (*Esperando decisión*) y, al reconectar, el operador decide si reanuda, regresa o cancela. Con
+   batería crítica vuelve solo a la base. Se descartaron las otras dos opciones: **seguir la ronda**
+   deja un robot andando entre personas sin que nadie lo supervise, y **regresar a la base**
+   recorre la nave sin supervisión justo cuando el operador no puede ver ni frenar al robot.
+   Pausar pierde cobertura de vigilancia mientras dura el corte, pero es el estado más predecible.
+   Lo ocurrido durante el corte se entrega al reconectar.
 8. **La decisión cierra la alerta.** Si una alerta pedía una decisión y el robot acepta reanudar,
    regresar o cancelar, la alerta queda reconocida con la decisión anotada.
 9. **Un solo ViewModel** para toda la sesión: todas las pestañas muestran el mismo robot y comparten

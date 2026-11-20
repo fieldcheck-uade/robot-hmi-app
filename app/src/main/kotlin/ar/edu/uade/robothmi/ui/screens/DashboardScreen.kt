@@ -95,6 +95,11 @@ fun alertActions(alert: Alert, state: UiState, request: (UiEvent.SendCommand) ->
             command("Falsa alarma: reanudar", CommandType.RESUME_MISSION),
             command("Regresar a base", CommandType.RETURN_TO_SAFE_POINT),
         )
+        AlertType.UNSUPERVISED_PAUSE -> listOf(
+            command("Reanudar ronda", CommandType.RESUME_MISSION),
+            command("Regresar a base", CommandType.RETURN_TO_SAFE_POINT),
+            command("Cancelar misión", CommandType.CANCEL_MISSION),
+        )
         AlertType.CRITICAL_BATTERY, AlertType.CONNECTION_LOST -> emptyList()
     }
 }
