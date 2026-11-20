@@ -69,6 +69,7 @@ fun Telemetry.stateLabel(): String = when {
  * Old data is shown muted, an idle robot uses the normal text color,
  * and any other state uses the color of its tone.
  */
+@Composable
 private fun operationalStateColor(telemetry: Telemetry, isDataStale: Boolean): Color {
     if (isDataStale) {
         return Hmi.TextMuted

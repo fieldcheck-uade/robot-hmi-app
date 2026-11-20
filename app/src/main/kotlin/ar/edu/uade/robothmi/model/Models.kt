@@ -162,3 +162,16 @@ data class SimulationSettings(
     val linkDown: Boolean = false,
     val rejectCommands: Boolean = false,
 )
+
+// ---------- Preferencias ----------
+
+/** Tema elegido por el usuario. SYSTEM sigue la configuración del dispositivo. */
+enum class ThemeMode {
+    SYSTEM, LIGHT, DARK;
+
+    fun isDark(systemDark: Boolean): Boolean = when (this) {
+        SYSTEM -> systemDark
+        LIGHT -> false
+        DARK -> true
+    }
+}

@@ -6,6 +6,7 @@ import androidx.room.Room
 import ar.edu.uade.robothmi.data.RobotRepository
 import ar.edu.uade.robothmi.data.SimulationControls
 import ar.edu.uade.robothmi.data.local.HistoryDatabase
+import ar.edu.uade.robothmi.data.local.ThemeSettings
 import ar.edu.uade.robothmi.data.sim.SimulatedRobotRepository
 
 /** Inyección de dependencias manual: el único lugar que conoce la implementación simulada. */
@@ -15,6 +16,7 @@ class AppContainer(context: Context) {
 
     val repository: RobotRepository = simulated
     val simulationControls: SimulationControls = simulated
+    val themeSettings = ThemeSettings(context)
 }
 
 class RobotHmiApp : Application() {

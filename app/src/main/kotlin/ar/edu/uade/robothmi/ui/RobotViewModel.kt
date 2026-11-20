@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import ar.edu.uade.robothmi.RobotHmiApp
 import ar.edu.uade.robothmi.data.RobotRepository
 import ar.edu.uade.robothmi.data.SimulationControls
+import ar.edu.uade.robothmi.data.local.ThemeSettings
 import ar.edu.uade.robothmi.domain.Availability
 import ar.edu.uade.robothmi.domain.CommandRules
 import ar.edu.uade.robothmi.model.Alert
@@ -21,6 +22,7 @@ import ar.edu.uade.robothmi.model.MissionPlan
 import ar.edu.uade.robothmi.model.RobotInfo
 import ar.edu.uade.robothmi.model.SimulationSettings
 import ar.edu.uade.robothmi.model.Telemetry
+import ar.edu.uade.robothmi.model.ThemeMode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -56,6 +58,7 @@ sealed interface UiEvent {
     data class SendCommand(val type: CommandType, val missionId: String? = null, val alertId: Long? = null) : UiEvent
     data class NotifyGuard(val alert: Alert) : UiEvent
     data object ClearHistory : UiEvent
+    data class SetTheme(val mode: ThemeMode) : UiEvent
 
     // Panel de simulación (solo para la demo)
     data class SimSetLinkDown(val down: Boolean) : UiEvent
@@ -68,6 +71,7 @@ sealed interface UiEvent {
 class RobotViewModel(
     private val repository: RobotRepository,
     private val simulation: SimulationControls,
+    private val themeSettings: ThemeSettings,
 ) : ViewModel() {
 
     private data class Session(val robots: List<RobotInfo>, val selected: RobotInfo?, val connection: ConnectionState)
@@ -113,6 +117,9 @@ class RobotViewModel(
     val history: StateFlow<List<HistoryEvent>> =
         repository.history.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** Tema elegido; MainActivity lo resuelve contra la configuración del dispositivo. */
+    val themeMode: StateFlow<ThemeMode> = themeSettings.mode
+
     fun onEvent(event: UiEvent) {
         when (event) {
             is UiEvent.SelectRobot -> repository.connect(event.robotId)
@@ -123,6 +130,7 @@ class RobotViewModel(
                 "Por la alerta «${event.alert.title}». El aviso se hace por el canal habitual (radio/teléfono); la app solo lo deja asentado.",
             )
             UiEvent.ClearHistory -> repository.clearHistory()
+            is UiEvent.SetTheme -> themeSettings.setMode(event.mode)
             is UiEvent.SimSetLinkDown -> simulation.setLinkDown(event.down)
             is UiEvent.SimSetRejectCommands -> simulation.setRejectCommands(event.reject)
             UiEvent.SimLowBattery -> simulation.forceLowBattery()
@@ -148,7 +156,7 @@ class RobotViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as RobotHmiApp).container
-                RobotViewModel(container.repository, container.simulationControls)
+                RobotViewModel(container.repository, container.simulationControls, container.themeSettings)
             }
         }
     }
