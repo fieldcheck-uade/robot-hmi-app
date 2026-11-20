@@ -5,7 +5,7 @@ skinparam componentStyle rectangle
 skinparam defaultTextAlignment center
 skinparam ArrowColor #37474F
 skinparam nodesep 60
-skinparam ranksep 55
+skinparam ranksep 60
 skinparam rectangle {
   RoundCorner 12
 }
@@ -17,40 +17,51 @@ actor "Operador\n(vigilante en garita)" as operador
 node "Dispositivo Android · App Centinela Go2 HMI" as tablet {
 
   rectangle "Capa de presentación · Jetpack Compose" as ui #E3F2FD {
-    component "Pantallas\nSelección · Panel · Misiones\nControl · Alertas · Historial" as pantallas
+    component "Pantallas\nSelección · Panel · Misiones\nControl · Alertas · Historial\n+ panel de simulación" as pantallas
     component "Componentes reutilizables\nStatusChip · MetricTile · CommandButton\nAlertCard · PatrolMap" as componentes
   }
 
-  rectangle "ViewModel · MVVM" as vmLayer #E8F5E9 {
-    component "RobotViewModel\nexpone UiState (StateFlow)\nrecibe UiEvent" as vm
-  }
+  component "**ViewModel (MVVM)**\nRobotViewModel\nexpone UiState (StateFlow)\nrecibe UiEvent" as vm #E8F5E9
 
   rectangle "Dominio" as domain #FFF8E1 {
     component "CommandRules\n¿la orden está habilitada?\nsi no, ¿por qué?" as rules
   }
 
+  rectangle "Inyección de dependencias" as di #ECEFF1 {
+    component "AppContainer\ncrea SimulatedRobotRepository;\núnico lugar que conoce\nla implementación" as container
+  }
+
   rectangle "Datos" as data #F3E5F5 {
-    component "«interface» RobotRepository\ncontrato: telemetría, alertas,\nórdenes, historial" as repo
+    component "«interface» RobotRepository\ntelemetría, alertas, órdenes,\nhistorial · connect · sendCommand" as repo
+    component "«interface» SimulationControls\ncortar enlace · rechazar órdenes\nforzar batería baja, obstáculo, intruso" as simControls
     component "SimulatedRobotRepository\ncanal simulado: telemetría 1 Hz,\ndemoras, timeouts, cortes de enlace" as simRepo
     component "RobotSimulator\nmodelo del Go2: misión, batería,\nobstáculos, intrusos" as simulator
     database "Room\nhistory_events" as room
+    component "WebSocketRobotRepository\n(integración futura,\nno implementada)" as wsRepo #FAFAFA
   }
 }
 
 node "Robot Unitree Go2 · integración futura" as go2 #ECEFF1 {
-  component "Puente ROS 2\n(WebSocket)" as bridge
+  component "Puente ROS 2\n(servidor WebSocket)" as bridge
 }
 
 operador -down-> pantallas : órdenes y\nreconocimientos
 pantallas -right-> componentes
 pantallas -down-> vm : UiEvent
 vm -up-> pantallas : UiState
-vm -right-> rules : valida antes\nde enviar
+vm -right-> rules : valida\nantes de enviar
 vm -down-> repo : sendCommand\nconnect
-repo -up-> vm : Flows de telemetría,\nalertas, órdenes, historial
-simRepo -up-|> repo : implementa
-simRepo -right-> simulator : tick() 1 Hz\nhandle(orden)
+vm -down-> simControls : solo el panel\nde simulación
+repo .up.> vm : Flows de telemetría,\nalertas, órdenes, historial
+container .up.> vm : entrega las\ninterfaces
+
+simRepo -up-|> repo
+simRepo -up-|> simControls
+simRepo -down-> simulator : tick() 1 Hz\nhandle(orden)
 simRepo -down-> room : guarda eventos
-bridge .up.|> repo : reemplazaría al simulador\n(mismo contrato de mensajes)
+wsRepo -[hidden]right- simRepo
+
+wsRepo .up.|> repo : reemplazaría al simulado
+wsRepo .down.> bridge : mensajes JSON de\ncontrato-mensajes.md
 
 @enduml
