@@ -1,0 +1,56 @@
+@startuml diagrama-arquitectura
+skinparam dpi 120
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam defaultTextAlignment center
+skinparam ArrowColor #37474F
+skinparam nodesep 60
+skinparam ranksep 55
+skinparam rectangle {
+  RoundCorner 12
+}
+
+title Diagrama de arquitectura · Centinela Go2 HMI
+
+actor "Operador\n(vigilante en garita)" as operador
+
+node "Dispositivo Android · App Centinela Go2 HMI" as tablet {
+
+  rectangle "Capa de presentación · Jetpack Compose" as ui #E3F2FD {
+    component "Pantallas\nSelección · Panel · Misiones\nControl · Alertas · Historial" as pantallas
+    component "Componentes reutilizables\nStatusChip · MetricTile · CommandButton\nAlertCard · PatrolMap" as componentes
+  }
+
+  rectangle "ViewModel · MVVM" as vmLayer #E8F5E9 {
+    component "RobotViewModel\nexpone UiState (StateFlow)\nrecibe UiEvent" as vm
+  }
+
+  rectangle "Dominio" as domain #FFF8E1 {
+    component "CommandRules\n¿la orden está habilitada?\nsi no, ¿por qué?" as rules
+  }
+
+  rectangle "Datos" as data #F3E5F5 {
+    component "«interface» RobotRepository\ncontrato: telemetría, alertas,\nórdenes, historial" as repo
+    component "SimulatedRobotRepository\ncanal simulado: telemetría 1 Hz,\ndemoras, timeouts, cortes de enlace" as simRepo
+    component "RobotSimulator\nmodelo del Go2: misión, batería,\nobstáculos, intrusos" as simulator
+    database "Room\nhistory_events" as room
+  }
+}
+
+node "Robot Unitree Go2 · integración futura" as go2 #ECEFF1 {
+  component "Puente ROS 2\n(WebSocket)" as bridge
+}
+
+operador -down-> pantallas : órdenes y\nreconocimientos
+pantallas -right-> componentes
+pantallas -down-> vm : UiEvent
+vm -up-> pantallas : UiState
+vm -right-> rules : valida antes\nde enviar
+vm -down-> repo : sendCommand\nconnect
+repo -up-> vm : Flows de telemetría,\nalertas, órdenes, historial
+simRepo -up-|> repo : implementa
+simRepo -right-> simulator : tick() 1 Hz\nhandle(orden)
+simRepo -down-> room : guarda eventos
+bridge .up.|> repo : reemplazaría al simulador\n(mismo contrato de mensajes)
+
+@enduml

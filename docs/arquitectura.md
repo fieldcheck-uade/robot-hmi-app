@@ -3,6 +3,14 @@
 Kotlin + Jetpack Compose, MVVM con `ViewModel` y `StateFlow`. La UI observa estado y envía eventos;
 nunca toca el Repository ni el simulador.
 
+## Diagrama de arquitectura
+
+![Diagrama de arquitectura de Centinela Go2 HMI](diagrama-arquitectura.png)
+
+Fuente editable en PlantUML: [`diagrama-arquitectura.puml`](diagrama-arquitectura.puml).
+
+## Vista por capas
+
 ```mermaid
 flowchart TD
     subgraph UI["UI — Jetpack Compose"]
