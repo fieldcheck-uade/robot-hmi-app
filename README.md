@@ -4,6 +4,18 @@ Trabajo práctico grupal de Desarrollo de Aplicaciones I (UADE): interfaz de ope
 para un **Unitree Go2** que hace rondas de vigilancia nocturna en un centro logístico.
 La app funciona con un **robot simulado**: no necesita robot, servidor ni internet.
 
+## Equipo y cursada
+
+| | |
+|---|---|
+| Universidad | Universidad Argentina de la Empresa (UADE) — Facultad de Ingeniería y Ciencias Exactas |
+| Materia | Desarrollo de Aplicaciones I |
+| Cursada | 2º cuatrimestre 2026 · viernes, turno noche |
+| Docentes | Adrián Alberto Narducci · Alejandro Francisco Peña |
+| Integrantes | Franco Bonorino · Mercedes Rodríguez · Nicolás Rodríguez · Nahuel Sanguineti |
+
+## Documentación
+
 | | |
 |---|---|
 | Consigna | [`TP-HMI-Ottoman.pdf`](TP-HMI-Ottoman.pdf) |
@@ -53,9 +65,9 @@ app/src/main/kotlin/ar/edu/uade/robothmi/
 
 ## Pendiente del grupo
 
-Cada pendiente tiene su issue en GitHub:
+Preentrega: 20/11/2026. Para la entrega final falta lo siguiente (cada pendiente tiene su issue):
 
-- [#3](https://github.com/fieldcheck-uade/robot-hmi-app/issues/3) **Video** de demostración (guion en `docs/escenarios.md`).
+- [#3](https://github.com/fieldcheck-uade/robot-hmi-app/issues/3) **Video** de demostración (en pausa; guion en `docs/escenarios.md`).
 - [#5](https://github.com/fieldcheck-uade/robot-hmi-app/issues/5) Revisión del equipo de lo mergeado en el PR #1.
 
 Resueltos: [#2](https://github.com/fieldcheck-uade/robot-hmi-app/issues/2) prototipo en Figma
