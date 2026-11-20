@@ -30,7 +30,11 @@
     pestañas con estado simple: el tamaño de la app no justifica Hilt ni Navigation.
 11. **Controles de simulación en una interfaz aparte** (`SimulationControls`), accesibles solo a
     través del ViewModel, para que quede claro qué desaparece con un robot real.
-12. **Tema oscuro único**, pensado para uso nocturno.
+12. **Tema claro y oscuro, según el dispositivo.** Por defecto la app sigue la configuración del
+    sistema; el botón sol/luna de la barra superior (también en la selección del robot) cambia el
+    tema y la elección queda guardada (SharedPreferences: es un único valor, no justifica Room). El
+    oscuro sigue siendo el pensado para la ronda nocturna; el claro usa tonos más oscuros de
+    advertencia, error y acento para mantener el contraste sobre fondo blanco.
 
 ## Limitaciones
 
@@ -44,5 +48,7 @@
   simulado se reinicia.
 - "Avisar a guardia" solo deja constancia en el historial; no envía ningún aviso.
 - Sin autenticación de operadores ni roles.
+- Una vez elegido un tema a mano, la app no vuelve a seguir al sistema (no hay opción "automático";
+  se recupera borrando los datos de la app).
 - Probado en emulador (Pixel 9a, vertical). No hay diseño específico para tablet ni horizontal.
 - Tests: unitarios del simulador y de las reglas de habilitación. Sin tests de UI.

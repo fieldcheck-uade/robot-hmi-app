@@ -87,3 +87,7 @@ reglas y pantallas no cambian.
 Room, tabla `history_events`: conexiones, órdenes con su resultado, cambios de misión, alertas y
 acciones del operador. Se eligió Room porque el historial es una lista consultable y filtrable que
 crece con el uso; DataStore no está pensado para eso.
+
+El tema elegido (claro / oscuro / según el sistema) se guarda aparte en SharedPreferences
+(`ThemeSettings`): es un único valor. El ViewModel lo expone como `themeMode` y `MainActivity` lo
+resuelve contra la configuración del dispositivo.
