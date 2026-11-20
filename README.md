@@ -4,6 +4,18 @@ Trabajo práctico grupal de Desarrollo de Aplicaciones I (UADE): interfaz de ope
 para un **Unitree Go2** que hace rondas de vigilancia nocturna en un centro logístico.
 La app funciona con un **robot simulado**: no necesita robot, servidor ni internet.
 
+## Equipo y cursada
+
+| | |
+|---|---|
+| Universidad | Universidad Argentina de la Empresa (UADE) — Facultad de Ingeniería y Ciencias Exactas |
+| Materia | Desarrollo de Aplicaciones I |
+| Cursada | 2º cuatrimestre 2026 · viernes, turno noche |
+| Docentes | Adrián Alberto Narducci · Alejandro Francisco Peña |
+| Integrantes | Franco Bonorino · Mercedes Rodríguez · Nicolás Rodríguez · Nahuel Sanguineti |
+
+## Documentación
+
 | | |
 |---|---|
 | Consigna | [`TP-HMI-Ottoman.pdf`](TP-HMI-Ottoman.pdf) |
@@ -12,6 +24,7 @@ La app funciona con un **robot simulado**: no necesita robot, servidor ni intern
 | Contrato de mensajes (JSON) | [`docs/contrato-mensajes.md`](docs/contrato-mensajes.md) |
 | Los cinco escenarios y cómo demostrarlos | [`docs/escenarios.md`](docs/escenarios.md) |
 | Riesgos y medidas | [`docs/riesgos.md`](docs/riesgos.md) |
+| Prototipo en Figma | [Centinela Go2 — HMI](https://www.figma.com/design/mfVVEeQQQo9xhWySi0EQqi/Centinela-Go2-%E2%80%94-HMI?node-id=0-1) |
 | Guía para el Figma | [`docs/figma.md`](docs/figma.md) |
 | Decisiones y limitaciones | [`docs/decisiones.md`](docs/decisiones.md) |
 
@@ -52,12 +65,12 @@ app/src/main/kotlin/ar/edu/uade/robothmi/
 
 ## Pendiente del grupo
 
-Cada pendiente tiene su issue en GitHub:
+Preentrega: 20/11/2026. Para la entrega final falta lo siguiente (cada pendiente tiene su issue):
 
-- [#2](https://github.com/fieldcheck-uade/robot-hmi-app/issues/2) Prototipo navegable en **Figma** (guía en `docs/figma.md`).
-- [#3](https://github.com/fieldcheck-uade/robot-hmi-app/issues/3) **Video** de demostración (guion en `docs/escenarios.md`).
+- [#3](https://github.com/fieldcheck-uade/robot-hmi-app/issues/3) **Video** de demostración (en pausa; guion en `docs/escenarios.md`).
 - [#5](https://github.com/fieldcheck-uade/robot-hmi-app/issues/5) Revisión del equipo de lo mergeado en el PR #1.
 
-Resueltos: [#4](https://github.com/fieldcheck-uade/robot-hmi-app/issues/4) comportamiento sin conexión
+Resueltos: [#2](https://github.com/fieldcheck-uade/robot-hmi-app/issues/2) prototipo en Figma
+(link arriba), [#4](https://github.com/fieldcheck-uade/robot-hmi-app/issues/4) comportamiento sin conexión
 (decisión 7 en `docs/decisiones.md`) y [#6](https://github.com/fieldcheck-uade/robot-hmi-app/issues/6)
 APK publicado.

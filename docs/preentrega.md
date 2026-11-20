@@ -154,7 +154,7 @@ Cada orden pasa por los estados **pendiente → confirmada / rechazada / sin res
 espera). "Confirmada" significa que el robot la aceptó, no que ya la ejecutó: la ejecución se
 verifica en la telemetría. Iniciar, cancelar y regresar piden confirmación; la detención no.
 
-Riesgos: ver [`riesgos.md`](riesgos.md). Flujos del Figma: ver [`figma.md`](figma.md).
+Riesgos: ver [`riesgos.md`](riesgos.md). Flujos del Figma: ver [`figma.md`](figma.md) y el [prototipo navegable](https://www.figma.com/design/mfVVEeQQQo9xhWySi0EQqi/Centinela-Go2-%E2%80%94-HMI?node-id=0-1).
 
 ## 7. Fuentes técnicas
 
