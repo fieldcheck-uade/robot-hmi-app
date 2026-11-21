@@ -30,6 +30,7 @@ import ar.edu.uade.robothmi.ui.theme.Hmi
 @Composable
 fun PatrolMap(telemetry: Telemetry?, plan: MissionPlan?, stale: Boolean, modifier: Modifier = Modifier) {
     val measurer = rememberTextMeasurer()
+    val colors = Hmi.palette
     val labelStyle = TextStyle(color = Hmi.TextMuted, fontSize = 9.sp)
     val description = telemetry?.let {
         "Mapa de la nave. Robot en ${it.zone}" + if (stale) ", última posición conocida" else ""
@@ -44,14 +45,14 @@ fun PatrolMap(telemetry: Telemetry?, plan: MissionPlan?, stale: Boolean, modifie
         val scale = size.width / SiteMap.WIDTH
         fun at(x: Float, y: Float) = Offset(x * scale, y * scale)
 
-        drawRoundRect(Hmi.Background, cornerRadius = CornerRadius(8f * density))
-        drawRoundRect(Hmi.Outline, cornerRadius = CornerRadius(8f * density), style = Stroke(1.5f * density))
+        drawRoundRect(colors.background, cornerRadius = CornerRadius(8f * density))
+        drawRoundRect(colors.outline, cornerRadius = CornerRadius(8f * density), style = Stroke(1.5f * density))
 
         SiteMap.zones.forEach { zone ->
             val topLeft = at(zone.left, zone.top)
             val zoneSize = Size((zone.right - zone.left) * scale, (zone.bottom - zone.top) * scale)
-            drawRect(Hmi.SurfaceHigh.copy(alpha = 0.7f), topLeft, zoneSize)
-            drawRect(Hmi.Outline, topLeft, zoneSize, style = Stroke(1f * density))
+            drawRect(colors.surfaceHigh.copy(alpha = 0.7f), topLeft, zoneSize)
+            drawRect(colors.outline, topLeft, zoneSize, style = Stroke(1f * density))
             val text = measurer.measure(zone.name, labelStyle, maxLines = 2, softWrap = true,
                 constraints = androidx.compose.ui.unit.Constraints(maxWidth = (zoneSize.width - 8 * density).toInt().coerceAtLeast(1)))
             drawText(text, topLeft = topLeft + Offset(4f * density, 3f * density))
@@ -66,27 +67,27 @@ fun PatrolMap(telemetry: Telemetry?, plan: MissionPlan?, stale: Boolean, modifie
                 lineTo(SiteMap.BASE_X * scale, SiteMap.BASE_Y * scale)
             }
             drawPath(
-                path, Hmi.Accent.copy(alpha = 0.7f),
+                path, colors.accent.copy(alpha = 0.7f),
                 style = Stroke(1.5f * density, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f * density, 5f * density))),
             )
             plan.checkpoints.forEachIndexed { index, cp ->
                 val done = index < mission.checkpointsDone
                 val center = at(cp.x, cp.y)
-                drawCircle(Hmi.Background, 5f * density, center)
-                if (done) drawCircle(Hmi.Ok, 5f * density, center)
-                else drawCircle(Hmi.Accent, 5f * density, center, style = Stroke(1.5f * density))
+                drawCircle(colors.background, 5f * density, center)
+                if (done) drawCircle(colors.ok, 5f * density, center)
+                else drawCircle(colors.accent, 5f * density, center, style = Stroke(1.5f * density))
             }
         }
 
         // Punto seguro (base de carga)
         val base = at(SiteMap.BASE_X, SiteMap.BASE_Y)
         val half = 5f * density
-        drawRect(Hmi.Info, base - Offset(half, half), Size(half * 2, half * 2), style = Stroke(2f * density))
+        drawRect(colors.info, base - Offset(half, half), Size(half * 2, half * 2), style = Stroke(2f * density))
 
         // Robot
         if (telemetry != null) {
             val pos = at(telemetry.x, telemetry.y)
-            val color = if (stale) Hmi.Warn else Hmi.Text
+            val color = if (stale) colors.warn else colors.text
             rotate(telemetry.headingDeg, pivot = pos) {
                 val r = 7f * density
                 val arrow = Path().apply {

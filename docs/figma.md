@@ -68,18 +68,19 @@ se comunica solo con color: siempre hay ícono y texto.
 
 ## Estilos
 
-| Token | Valor |
-|---|---|
-| Fondo | `#0E1318` |
-| Superficie / superficie alta | `#161D24` / `#1F2831` |
-| Borde | `#2E3A46` |
-| Texto / texto secundario | `#E6EDF3` / `#93A1AE` |
-| Acento | `#4FD1C5` |
-| OK / Advertencia / Error / Info | `#5ED68A` / `#F5B841` / `#FF6B5E` / `#6CB6FF` |
+| Token | Oscuro | Claro |
+|---|---|---|
+| Fondo | `#0E1318` | `#F3F5F7` |
+| Superficie / superficie alta | `#161D24` / `#1F2831` | `#FFFFFF` / `#E8EDF1` |
+| Borde | `#2E3A46` | `#C8D1D9` |
+| Texto / texto secundario | `#E6EDF3` / `#93A1AE` | `#111A22` / `#55636F` |
+| Acento | `#4FD1C5` | `#0B7A71` |
+| OK / Advertencia / Error / Info | `#5ED68A` / `#F5B841` / `#FF6B5E` / `#6CB6FF` | `#1B7F45` / `#9A5F00` / `#C0352B` / `#1A65B5` |
 | Tipografía | Roboto; valores numéricos en monoespaciada |
 | Radios | 14 (paneles), 12 (botones y tarjetas), píldora (chips) |
 
-Tema oscuro únicamente: el operador mira la pantalla de noche en una garita con poca luz.
+Por defecto sigue el tema del dispositivo; el botón sol/luna de la barra superior lo cambia y la
+elección se recuerda. El oscuro es el pensado para la ronda nocturna en la garita.
 
 ## Flujos a prototipar
 

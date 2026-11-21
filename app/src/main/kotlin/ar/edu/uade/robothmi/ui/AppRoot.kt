@@ -66,6 +66,7 @@ import ar.edu.uade.robothmi.model.ConnectionState
 import ar.edu.uade.robothmi.model.HistoryEvent
 import ar.edu.uade.robothmi.model.OperationalState
 import ar.edu.uade.robothmi.ui.components.StatusChip
+import ar.edu.uade.robothmi.ui.components.ThemeToggleButton
 import ar.edu.uade.robothmi.ui.components.formatClock
 import ar.edu.uade.robothmi.ui.components.icon
 import ar.edu.uade.robothmi.ui.components.tone
@@ -142,6 +143,7 @@ private fun MainScreen(state: UiState, history: List<HistoryEvent>, onEvent: (Ui
                         }
                     },
                     actions = {
+                        ThemeToggleButton { onEvent(UiEvent.SetTheme(it)) }
                         IconButton(onClick = { showSimPanel = true }) {
                             Icon(Icons.Filled.Science, contentDescription = "Panel de simulación", tint = Hmi.TextMuted)
                         }

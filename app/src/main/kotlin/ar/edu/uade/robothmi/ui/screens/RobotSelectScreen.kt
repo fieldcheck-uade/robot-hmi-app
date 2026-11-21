@@ -34,6 +34,7 @@ import ar.edu.uade.robothmi.model.RobotInfo
 import ar.edu.uade.robothmi.ui.UiEvent
 import ar.edu.uade.robothmi.ui.UiState
 import ar.edu.uade.robothmi.ui.components.StatusChip
+import ar.edu.uade.robothmi.ui.components.ThemeToggleButton
 import ar.edu.uade.robothmi.ui.theme.Hmi
 import ar.edu.uade.robothmi.ui.theme.Tone
 
@@ -50,10 +51,11 @@ fun RobotSelectScreen(state: UiState, onEvent: (UiEvent) -> Unit) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Icon(Icons.Filled.Shield, contentDescription = null, tint = Hmi.Accent, modifier = Modifier.size(32.dp))
-            Column {
+            Column(Modifier.weight(1f)) {
                 Text("Centinela Go2", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                 Text("Rondas de vigilancia nocturna", style = MaterialTheme.typography.bodyMedium, color = Hmi.TextMuted)
             }
+            ThemeToggleButton { onEvent(UiEvent.SetTheme(it)) }
         }
         Text(
             "Elegí el robot que vas a supervisar",

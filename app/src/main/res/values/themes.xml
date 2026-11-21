@@ -1,7 +1,11 @@
 <resources>
-    <style name="Theme.RobotHmi" parent="android:Theme.Material.NoActionBar">
+    <!-- Fondo de la ventana antes de que dibuje Compose. Sigue la configuración del dispositivo;
+         values-night tiene la versión oscura. -->
+    <style name="Theme.RobotHmi" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/bg</item>
     </style>
-    <color name="bg">#0E1318</color>
+    <color name="bg">#F3F5F7</color>
     <color name="accent">#4FD1C5</color>
+    <!-- El ícono de la app es siempre oscuro, sin importar el tema. -->
+    <color name="launcher_bg">#0E1318</color>
 </resources>

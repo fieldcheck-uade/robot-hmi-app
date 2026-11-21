@@ -54,7 +54,7 @@ app/src/main/kotlin/ar/edu/uade/robothmi/
 ├── domain/       CommandRules: condiciones de habilitación de cada orden
 ├── data/
 │   ├── RobotRepository.kt   Interfaz del Repository + SimulationControls
-│   ├── local/               Room: historial de eventos
+│   ├── local/               Room (historial de eventos) y preferencia de tema
 │   └── sim/                 RobotSimulator (modelo del robot) y SimulatedRobotRepository
 └── ui/
     ├── RobotViewModel.kt    UiState (StateFlow) + UiEvent
