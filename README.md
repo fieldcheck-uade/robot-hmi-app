@@ -24,7 +24,7 @@ La app funciona con un **robot simulado**: no necesita robot, servidor ni intern
 | Contrato de mensajes (JSON) | [`docs/contrato-mensajes.md`](docs/contrato-mensajes.md) |
 | Los cinco escenarios y cómo demostrarlos | [`docs/escenarios.md`](docs/escenarios.md) |
 | Riesgos y medidas | [`docs/riesgos.md`](docs/riesgos.md) |
-| Prototipo en Figma | [Centinela Go2 — HMI](https://www.figma.com/design/mfVVEeQQQo9xhWySi0EQqi/Centinela-Go2-%E2%80%94-HMI?node-id=0-1) |
+| Prototipo navegable en Figma | [Centinela Go2 — HMI](https://www.figma.com/proto/mfVVEeQQQo9xhWySi0EQqi/Centinela-Go2-%E2%80%94-HMI) (se abre sin cuenta) |
 | Guía para el Figma | [`docs/figma.md`](docs/figma.md) |
 | Decisiones y limitaciones | [`docs/decisiones.md`](docs/decisiones.md) |
 

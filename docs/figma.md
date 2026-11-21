@@ -1,6 +1,7 @@
 # Guía para el prototipo en Figma
 
-**Prototipo:** [Centinela Go2 — HMI](https://www.figma.com/design/mfVVEeQQQo9xhWySi0EQqi/Centinela-Go2-%E2%80%94-HMI?node-id=0-1)
+**Prototipo navegable:** [Centinela Go2 — HMI](https://www.figma.com/proto/mfVVEeQQQo9xhWySi0EQqi/Centinela-Go2-%E2%80%94-HMI) (se abre sin cuenta).
+**Archivo de diseño** (pantallas, componentes y mapa de navegación): [abrir en Figma](https://www.figma.com/design/mfVVEeQQQo9xhWySi0EQqi/Centinela-Go2-%E2%80%94-HMI?node-id=0-1).
 
 El Figma lo arma el grupo; esta guía describe lo que la app ya implementa para que el prototipo y el
 APK coincidan. Las capturas de [`evidencias/`](evidencias/) sirven de referencia visual.
