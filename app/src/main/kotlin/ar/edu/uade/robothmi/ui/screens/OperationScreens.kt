@@ -57,8 +57,19 @@ import ar.edu.uade.robothmi.ui.theme.Hmi
 import ar.edu.uade.robothmi.ui.theme.Tone
 import kotlin.math.roundToInt
 
+/*
+ * Pantallas de operación: Misiones, Control, Alertas e Historial.
+ * Ninguna guarda datos del robot: reciben el UiState (o la lista de historial) y avisan lo que toca el
+ * operador. Tampoco deciden si una orden está permitida: eso llega calculado en `state.availabilityOf(...)`,
+ * así el mismo botón se comporta igual en Misiones y en Control.
+ */
+
 // ---------- Misiones ----------
 
+/**
+ * El operador no maneja al robot paso a paso: elige una ronda ya definida y supervisa su progreso.
+ * Es el modo de uso que mejor se adapta a un teléfono táctil y a un robot que patrulla solo.
+ */
 @Composable
 fun MissionsScreen(state: UiState, request: (UiEvent.SendCommand) -> Unit) {
     val mission = state.telemetry?.mission
@@ -148,6 +159,11 @@ fun MissionsScreen(state: UiState, request: (UiEvent.SendCommand) -> Unit) {
 
 // ---------- Control ----------
 
+/**
+ * Órdenes puntuales (botones), sin joystick ni control continuo: en una pantalla táctil es más seguro
+ * pedir comportamientos completos (pausar, regresar) que manejar el movimiento a mano.
+ * La detención va primero y en rojo; debajo, la lista de órdenes de la sesión con lo que respondió el robot.
+ */
 @Composable
 fun ControlScreen(state: UiState, request: (UiEvent.SendCommand) -> Unit, goToMissions: () -> Unit) {
     Column(
@@ -160,6 +176,9 @@ fun ControlScreen(state: UiState, request: (UiEvent.SendCommand) -> Unit, goToMi
             modifier = Modifier.fillMaxWidth(),
             tone = Tone.ERROR,
         )
+        // Le aclaramos al operador los límites de este botón: una orden que viaja por red puede no llegar,
+        // no reemplaza la parada de emergencia física, y que el robot la acepte no prueba que ya se detuvo.
+        // Es mejor que el operador lo sepa a que confíe de más en la app.
         Text(
             "La detención es una orden de software: puede no llegar o ser rechazada y no reemplaza la parada de " +
                 "emergencia física del robot. Una orden confirmada significa que el robot la aceptó; verificá en la " +
@@ -220,6 +239,11 @@ fun ControlScreen(state: UiState, request: (UiEvent.SendCommand) -> Unit, goToMi
 
 // ---------- Alertas ----------
 
+/**
+ * Las alertas activas van arriba, separadas de las ya reconocidas, para que lo pendiente no se pierda
+ * entre lo resuelto. Usamos LazyColumn con `key = id` para que Compose identifique cada alerta aunque
+ * lleguen nuevas arriba y la lista cambie de orden.
+ */
 @Composable
 fun AlertsScreen(state: UiState, request: (UiEvent.SendCommand) -> Unit, onEvent: (UiEvent) -> Unit) {
     if (state.alerts.isEmpty()) {
@@ -259,10 +283,20 @@ fun AlertsScreen(state: UiState, request: (UiEvent.SendCommand) -> Unit, onEvent
 
 // ---------- Historial ----------
 
+/**
+ * Historial persistido en Room.
+ *
+ * Muestra el registro de la ronda: cada orden, alerta y cambio de conexión con su hora, para poder
+ * reconstruir qué pasó. La lista llega desde Room y se actualiza sola cuando se agrega un evento.
+ * Borrar pide confirmación porque no se puede deshacer.
+ */
 @Composable
 fun HistoryScreen(history: List<HistoryEvent>, onEvent: (UiEvent) -> Unit) {
+    // rememberSaveable: si el operador gira el teléfono, el filtro elegido se mantiene.
     var filter by rememberSaveable { mutableStateOf<HistoryCategory?>(null) }
     var confirmClear by rememberSaveable { mutableStateOf(false) }
+    // Filtramos en memoria porque son como mucho 500 filas (el límite del DAO). Con muchos más datos
+    // convendría filtrar directamente en la consulta SQL con un WHERE.
     val shown = history.filter { filter == null || it.category == filter }
 
     Column(Modifier.fillMaxSize()) {

@@ -16,7 +16,10 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
-/** Lo que el robot simulado le cuenta a la app además de la telemetría periódica. */
+/**
+ * Lo que el robot simulado le cuenta a la app además de la telemetría periódica.
+ * Es sealed para que el `when` que los procesa tenga que contemplar todos los tipos de evento.
+ */
 sealed interface SimEvent {
     val timestampMs: Long
 
@@ -37,6 +40,7 @@ sealed interface SimEvent {
     ) : SimEvent
 }
 
+/** Respuesta del robot a una orden: aceptada, o rechazada CON el motivo que después ve el operador. */
 sealed interface CommandOutcome {
     data object Accepted : CommandOutcome
     data class Rejected(val reason: String) : CommandOutcome
@@ -47,6 +51,15 @@ sealed interface CommandOutcome {
  * y se le entregan órdenes con [handle], lo que permite probarlo con tests unitarios.
  *
  * No es seguro entre hilos: quien lo usa debe serializar las llamadas.
+ *
+ * La app le da órdenes de ALTO NIVEL (iniciar ronda, pausar, regresar), nunca controla motores ni
+ * articulaciones: el equilibrio y la marcha son responsabilidad del robot. También tiene autonomía
+ * propia: con batería crítica aborta la misión y vuelve solo a la base, aunque nadie se lo ordene.
+ * [snapshot] es lo que el robot informa; la app decide cómo mostrarlo (por ejemplo, atenuado si es viejo).
+ *
+ * Lo escribimos sin Android ni corrutinas para poder probarlo con tests de JUnit comunes
+ * (RobotSimulatorTest), sin emulador. El tiempo ([tick], nowMs) y el azar ([random]) se le pasan
+ * desde afuera, así los tests controlan exactamente qué pasa en cada segundo.
  */
 class RobotSimulator(
     private val robot: RobotInfo,
@@ -243,7 +256,11 @@ class RobotSimulator(
 
     // ---------- Órdenes ----------
 
-    /** El robot decide si acepta la orden según su estado real, no según lo que crea la app. */
+    /**
+     * El robot decide si acepta la orden según su estado real, no según lo que crea la app.
+     * Esta validación repite la de CommandRules a propósito: la app puede tener datos viejos, así que
+     * quien tiene la autoridad real sobre el movimiento (el robot) vuelve a revisar todo antes de actuar.
+     */
     fun handle(type: CommandType, missionId: String?, nowMs: Long): CommandOutcome {
         when (type) {
             CommandType.START_MISSION -> {
@@ -355,6 +372,11 @@ class RobotSimulator(
 
     // ---------- Telemetría ----------
 
+    /**
+     * Arma el mensaje de telemetría. Mezcla mediciones con ruido simulado (señal, velocidad,
+     * temperatura) y valores calculados (zona, progreso). `timestampMs` es lo que permite a la app
+     * calcular cuán viejo es el dato. Las posiciones están en metros sobre el plano de la nave (SiteMap).
+     */
     fun snapshot(nowMs: Long): Telemetry {
         val distBase = SiteMap.distanceToBase(x, y)
         val zone = SiteMap.zoneAt(x, y)

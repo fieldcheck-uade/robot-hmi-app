@@ -13,6 +13,11 @@ import androidx.compose.ui.graphics.Color
  * Paleta de la HMI. Hay dos: la oscura, pensada para la ronda nocturna en una garita con poca
  * luz, y la clara, para usar de día o con mucha luz ambiente. Los estados nunca dependen solo
  * del color: siempre llevan ícono y texto.
+ *
+ * La paleta sale del contexto de uso: en la oscura, fondos oscuros y fríos para no encandilar al
+ * operador; en las dos, colores cálidos y saturados (Warn/Error) reservados para lo que exige atención
+ * inmediata, así resaltan cuando aparecen. El texto tiene contraste alto con el fondo para leerse bien.
+ * Todos los colores están definidos acá: si hay que ajustar uno, se cambia en un solo lugar.
  */
 data class HmiPalette(
     val isDark: Boolean,
@@ -79,6 +84,10 @@ object Hmi {
     val Info: Color @Composable @ReadOnlyComposable get() = palette.info
 }
 
+/**
+ * Significado semántico de un color (OK, advertencia, error…). Las pantallas eligen un tono, no un hex.
+ * El color se resuelve en el momento (getter @Composable) para que tome la paleta activa, clara u oscura.
+ */
 enum class Tone {
     OK, WARN, ERROR, INFO, ACCENT, MUTED;
 

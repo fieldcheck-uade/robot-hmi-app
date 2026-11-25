@@ -5,6 +5,10 @@ import kotlin.math.hypot
 /**
  * Plano esquemático de la nave logística (en metros, origen arriba a la izquierda).
  * Lo comparten el simulador (para moverse) y la UI (para dibujar el mapa).
+ *
+ * Todas las posiciones de la telemetría están en metros sobre este plano (coordenadas de la nave,
+ * no relativas al robot). Por eso el mapa de la app puede dibujar al robot y las rondas con los mismos
+ * números que usa el simulador. La "Base de carga" es el punto seguro al que vuelve el robot.
  */
 object SiteMap {
     const val WIDTH = 60f

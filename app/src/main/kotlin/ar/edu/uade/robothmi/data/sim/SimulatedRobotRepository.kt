@@ -40,6 +40,11 @@ import kotlin.random.Random
  * Simula también el canal: la telemetría llega a 1 Hz, las respuestas tardan, el enlace
  * puede caerse (la telemetría deja de llegar y las órdenes quedan sin respuesta) y el robot
  * puede rechazar órdenes. Todo el estado mutable se toca desde un único hilo lógico.
+ *
+ * Simulamos a propósito los problemas de una red real: respuestas que tardan, cortes de enlace,
+ * datos que envejecen y órdenes que nunca reciben respuesta. Lo hacemos para que la app tenga que
+ * manejarlos: en un robot, mostrar una lectura vieja como si fuera actual puede ser tan peligroso
+ * como no mostrar nada. Por eso existe el estado LOST y la alerta de "Conexión perdida".
  */
 class SimulatedRobotRepository(
     private val historyDao: HistoryDao,
@@ -47,7 +52,16 @@ class SimulatedRobotRepository(
     private val clock: () -> Long = System::currentTimeMillis,
 ) : RobotRepository, SimulationControls {
 
+    // Scope de corrutinas propio del Repository, que vive lo mismo que la app. No usamos viewModelScope
+    // porque la sesión con el robot no tiene que cortarse si se destruye una pantalla.
+    // SupervisorJob: si falla una corrutina (por ejemplo, una orden), las demás siguen funcionando.
+    // limitedParallelism(1): las corrutinas corren de a una, como en un único hilo. Así el estado
+    // compartido (sim, nextId, etc.) no necesita locks. Y nada corre en el hilo de la UI, que no se traba.
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
+
+    // Patrón que se repite abajo: `_x` es un MutableStateFlow PRIVADO (solo este Repository lo modifica)
+    // y `x` es la versión de solo lectura que ve el ViewModel. Así nadie de afuera puede cambiar,
+    // por ejemplo, el estado de conexión: solo lo cambia quien sabe lo que pasó con el enlace.
 
     private val _robots = MutableStateFlow(SimData.robots)
     override val robots: StateFlow<List<RobotInfo>> = _robots.asStateFlow()
@@ -71,6 +85,9 @@ class SimulatedRobotRepository(
     private val _settings = MutableStateFlow(SimulationSettings())
     override val settings: StateFlow<SimulationSettings> = _settings.asStateFlow()
 
+    // Convertimos cada fila de Room (HistoryEventEntity) en el modelo de la app (HistoryEvent, con enums).
+    // Así la UI nunca depende de cómo está guardado en la base: si mañana cambia la tabla, solo se toca
+    // esta conversión. runCatching evita un crash si una fila trae un valor que ya no existe en el enum.
     override val history: Flow<List<HistoryEvent>> = historyDao.observeRecent().map { rows ->
         rows.map {
             HistoryEvent(
@@ -93,6 +110,9 @@ class SimulatedRobotRepository(
 
     // ---------- Conexión ----------
 
+    // La conexión pasa por estados explícitos: DISCONNECTED → CONNECTING → CONNECTED (y LOST si se corta).
+    // La UI usa ese estado para mostrar "Conectando…" o bloquear órdenes. Las validaciones del principio
+    // evitan conectarse a un robot en mantenimiento o abrir dos sesiones a la vez.
     override fun connect(robotId: String) {
         scope.launch {
             val robot = _robots.value.firstOrNull { it.id == robotId } ?: return@launch
@@ -135,6 +155,13 @@ class SimulatedRobotRepository(
         }
     }
 
+    /**
+     * Bucle que recibe la telemetría una vez por segundo y vigila el enlace (watchdog).
+     * Si pasan LINK_TIMEOUT_MS sin datos, la conexión pasa a LOST y se genera una alerta. Lo hacemos
+     * porque, sin este control, la pantalla seguiría mostrando el último dato como si estuviera
+     * "conectado y operativo" aunque el robot ya esté en otro lugar.
+     * El robot simulado sigue avanzando aunque la app no lo vea, igual que un robot real con autonomía.
+     */
     private suspend fun runTelemetryLoop(simulator: RobotSimulator) {
         while (scope.isActive) {
             delay(TICK_MS)
@@ -207,6 +234,14 @@ class SimulatedRobotRepository(
 
     // ---------- Órdenes ----------
 
+    /**
+     * Ciclo de vida de una orden. Distinguimos enviar, aceptar y ejecutar:
+     * 1. Se registra como PENDING: la app la envió, pero todavía no sabe nada.
+     * 2. Tras una demora simulada el robot responde: CONFIRMED (la aceptó) o REJECTED (con el motivo).
+     * 3. Si el enlace sigue caído después de COMMAND_TIMEOUT_MS, queda NO_RESPONSE: no sabemos si llegó,
+     *    y la app lo dice así en vez de suponer que se ejecutó.
+     * Aun confirmada, eso solo significa que el robot la aceptó: que efectivamente se movió se ve en la telemetría.
+     */
     override fun sendCommand(type: CommandType, missionId: String?, alertId: Long?) {
         scope.launch {
             val simulator = sim ?: return@launch
@@ -241,6 +276,8 @@ class SimulatedRobotRepository(
                 _settings.value.rejectCommands ->
                     resolve(record, CommandStatus.REJECTED, "El robot rechazó la orden: controlador ocupado (rechazo forzado en la simulación).")
 
+                // La última palabra la tiene el robot: decide con su estado real, aunque la app haya mostrado
+                // el botón habilitado. La app puede tener datos viejos; el robot no.
                 else -> when (val outcome = simulator.handle(type, missionId, clock())) {
                     is CommandOutcome.Rejected -> resolve(record, CommandStatus.REJECTED, outcome.reason)
                     CommandOutcome.Accepted -> {
@@ -282,6 +319,9 @@ class SimulatedRobotRepository(
 
     // ---------- Historial ----------
 
+    // Cada orden, alerta y cambio de conexión se guarda en el historial con su hora, para poder
+    // reconstruir después qué pasó en la ronda. Se guarda en el momento en que ocurre, no al cerrar la
+    // app: si el sistema mata el proceso, onDestroy puede no ejecutarse y se perdería el registro.
     override fun logOperatorAction(title: String, detail: String) {
         scope.launch { log(HistoryCategory.OPERATOR, AlertSeverity.INFO, title, detail) }
     }
@@ -333,6 +373,8 @@ class SimulatedRobotRepository(
         scope.launch { sim?.forceIntruder(clock()) }
     }
 
+    // Todos los tiempos de la simulación tienen nombre y están en un solo lugar, para ajustarlos sin
+    // buscar números sueltos por el código.
     private companion object {
         const val TICK_MS = 1000L
         const val CONNECT_DELAY_MS = 1200L

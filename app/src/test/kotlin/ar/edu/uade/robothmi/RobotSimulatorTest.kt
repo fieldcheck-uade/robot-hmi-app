@@ -16,6 +16,15 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+/**
+ * Tests unitarios del robot simulado y de las reglas de órdenes.
+ *
+ * Como RobotSimulator y CommandRules son Kotlin puro, los probamos directo en la JVM: sin emulador,
+ * sin Android y sin corrutinas. El tiempo lo avanzamos a mano (`now` + `run(segundos)`), así una ronda
+ * de dos minutos se prueba en milisegundos y el resultado es siempre el mismo.
+ * Cada test sigue la estructura Given / When / Then: dado un robot en cierto estado, cuando recibe una
+ * orden o pasa el tiempo, entonces se verifica en qué estado quedó o por qué rechazó la orden.
+ */
 class RobotSimulatorTest {
     private var now = 0L
     private fun newSim(robotIndex: Int = 0) = RobotSimulator(SimData.robots[robotIndex], SimData.missions)

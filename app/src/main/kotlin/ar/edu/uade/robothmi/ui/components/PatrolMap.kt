@@ -26,6 +26,12 @@ import ar.edu.uade.robothmi.ui.theme.Hmi
 /**
  * Plano esquemático de la nave con el recorrido de la ronda y la posición del robot.
  * Con datos antiguos el robot se dibuja hueco: es la última posición conocida, no la actual.
+ *
+ * Con el mapa el operador ve de un vistazo dónde está el robot y hacia dónde va, sin leer coordenadas.
+ * Pasa los metros del plano (SiteMap) a píxeles con un factor de escala.
+ * Un Canvas no tiene texto que pueda leer un lector de pantalla, por eso le agregamos una descripción
+ * con `semantics { contentDescription }`.
+ * rememberTextMeasurer se guarda entre recomposiciones para no recrearlo cada vez que cambia la telemetría.
  */
 @Composable
 fun PatrolMap(telemetry: Telemetry?, plan: MissionPlan?, stale: Boolean, modifier: Modifier = Modifier) {
