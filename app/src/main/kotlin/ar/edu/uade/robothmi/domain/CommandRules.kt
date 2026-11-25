@@ -8,6 +8,12 @@ import ar.edu.uade.robothmi.model.MissionState
 import ar.edu.uade.robothmi.model.OperationalState
 import ar.edu.uade.robothmi.model.Telemetry
 
+/**
+ * Si una orden se puede enviar o no. Usamos una sealed interface con dos casos excluyentes: habilitada,
+ * o deshabilitada CON un motivo. Un simple `enabled: Boolean` no alcanzaría, porque en la app cada botón
+ * deshabilitado muestra el `reason` ("Batería insuficiente", "Sin conexión"): así el operador entiende
+ * por qué no puede tocarlo en vez de ver un botón gris sin explicación.
+ */
 sealed interface Availability {
     data object Enabled : Availability
     data class Disabled(val reason: String) : Availability
@@ -20,6 +26,16 @@ sealed interface Availability {
  *
  * Son una primera barrera para evitar órdenes sin sentido; la autoridad final es el robot,
  * que puede rechazar igualmente una orden habilitada (ver RobotSimulator.handle).
+ *
+ * Estas reglas viven acá, en la capa de dominio y en Kotlin puro (sin Android ni UI), y no en los
+ * botones. Así hay un solo lugar que decide qué se puede hacer, todas las pantallas muestran lo mismo
+ * y las reglas se prueban con tests unitarios sin emulador.
+ *
+ * Como la app mueve un robot físico, las reglas aplican criterios de seguridad:
+ *  - Mostrar solo las acciones disponibles en el estado actual.
+ *  - Inhibir el movimiento si el estado no es verificable (enlace LOST).
+ *  - La orden de detención queda siempre disponible cuando no se sabe si el robot se mueve.
+ *  - No permitir dos veces la misma orden mientras está pendiente (comandos duplicados).
  */
 object CommandRules {
     const val MIN_BATTERY_TO_START = 25f
@@ -84,6 +100,7 @@ object CommandRules {
         }
     }
 
+    /** Reconocer una alerta también es una orden: tiene sus propias condiciones. */
     fun ackAvailability(alert: Alert, connection: ConnectionState, ackPending: Boolean): Availability = when {
         alert.acknowledged -> Availability.Disabled("Alerta ya reconocida")
         ackPending -> Availability.Disabled("Orden pendiente de respuesta")

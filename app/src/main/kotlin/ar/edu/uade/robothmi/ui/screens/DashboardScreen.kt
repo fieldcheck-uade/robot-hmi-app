@@ -48,6 +48,8 @@ import ar.edu.uade.robothmi.ui.theme.Hmi
 import ar.edu.uade.robothmi.ui.theme.Tone
 import kotlin.math.roundToInt
 
+// Color de cada estado del robot. El `when` cubre todos los casos del enum sin `else`: si mañana se
+// agrega un estado nuevo, el código no compila hasta que se le asigne un color acá.
 fun OperationalState.tone(): Tone = when (this) {
     OperationalState.IDLE -> Tone.MUTED
     OperationalState.PATROLLING -> Tone.OK
@@ -80,7 +82,12 @@ private fun operationalStateColor(telemetry: Telemetry, isDataStale: Boolean): C
     return telemetry.opState.tone().color
 }
 
-/** Acciones que la interfaz ofrece junto a cada alerta, según su tipo. */
+/**
+ * Acciones que la interfaz ofrece junto a cada alerta, según su tipo.
+ * Junto a cada alerta ofrecemos las salidas seguras para esa situación (regresar, reanudar, cancelar,
+ * avisar a guardia), así el operador resuelve desde la misma tarjeta sin ir a otra pestaña.
+ * Cada acción respeta la disponibilidad que calculó CommandRules.
+ */
 fun alertActions(alert: Alert, state: UiState, request: (UiEvent.SendCommand) -> Unit, onEvent: (UiEvent) -> Unit): List<AlertAction> {
     fun command(label: String, type: CommandType) =
         AlertAction(label, state.availabilityOf(type)) { request(UiEvent.SendCommand(type)) }
@@ -105,6 +112,14 @@ fun alertActions(alert: Alert, state: UiState, request: (UiEvent.SendCommand) ->
     }
 }
 
+/**
+ * Panel principal de supervisión.
+ *
+ * El orden de arriba hacia abajo responde a lo que el operador necesita saber primero:
+ *  1) si tiene que actuar (la alerta más grave), 2) qué está haciendo el robot y en qué misión,
+ *  3) progreso y ubicación en el mapa, 4) el detalle técnico (telemetría) al final.
+ * No guarda estado: dibuja lo que recibe en `state` y avisa las acciones con `request`/`onEvent`.
+ */
 @Composable
 fun DashboardScreen(state: UiState, request: (UiEvent.SendCommand) -> Unit, onEvent: (UiEvent) -> Unit) {
     val t = state.telemetry ?: return
@@ -177,6 +192,8 @@ fun DashboardScreen(state: UiState, request: (UiEvent.SendCommand) -> Unit, onEv
             }
         }
 
+        // Telemetría agrupada por tema: energía, comunicación, movimiento y ubicación.
+        // Con `stale` cada dato se atenúa, porque es el último valor conocido y no el actual.
         SectionTitle("Telemetría")
         TileRow {
             MetricTile(

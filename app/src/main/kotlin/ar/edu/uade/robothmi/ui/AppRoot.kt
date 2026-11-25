@@ -79,6 +79,8 @@ import ar.edu.uade.robothmi.ui.screens.RobotSelectScreen
 import ar.edu.uade.robothmi.ui.theme.Hmi
 import ar.edu.uade.robothmi.ui.theme.Tone
 
+// Pestañas de la barra inferior. No usamos Navigation Compose porque son solo cinco pantallas al mismo
+// nivel, sin pasar datos entre ellas: alcanza con guardar cuál está elegida como estado local.
 private enum class Tab(val label: String, val icon: ImageVector) {
     PANEL("Panel", Icons.Filled.Dashboard),
     MISSIONS("Misiones", Icons.Filled.Route),
@@ -87,14 +89,26 @@ private enum class Tab(val label: String, val icon: ImageVector) {
     HISTORY("Historial", Icons.Filled.History),
 }
 
+/**
+ * Raíz de la UI y único composable que conoce al ViewModel.
+ * Lee el estado del ViewModel y se lo pasa a las pantallas junto con `onEvent` para que avisen lo que
+ * hace el usuario. Las pantallas no guardan datos propios: solo dibujan lo que reciben. Por eso se
+ * pueden previsualizar o probar pasándoles un UiState armado a mano.
+ */
 @Composable
 fun AppRoot(viewModel: RobotViewModel) {
+    // Usamos collectAsStateWithLifecycle() para leer el estado solo mientras la app está visible.
+    // Cuando el operador sale de la app (onStop) deja de recolectar, y al volver retoma con el valor actual.
+    // En nuestra app importa porque el estado se recalcula cada 500 ms (antigüedad del dato): con
+    // collectAsState() seguiría trabajando en segundo plano y gastando batería sin que nadie mire.
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val history by viewModel.history.collectAsStateWithLifecycle()
 
     Surface(Modifier.fillMaxSize(), color = Hmi.Background) {
         val inSession = state.telemetry != null &&
             (state.connection == ConnectionState.CONNECTED || state.connection == ConnectionState.LOST)
+        // Qué pantalla se ve depende solo del estado: si hay sesión con un robot, el panel principal;
+        // si no, la selección de robot. No hay que "navegar" a mano al conectar o desconectar.
         if (inSession) {
             MainScreen(state, history, viewModel::onEvent)
         } else {
@@ -106,6 +120,11 @@ fun AppRoot(viewModel: RobotViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainScreen(state: UiState, history: List<HistoryEvent>, onEvent: (UiEvent) -> Unit) {
+    // Esto es estado puramente VISUAL (qué pestaña o diálogo está abierto), no datos del robot, por eso
+    // vive acá y no en el ViewModel:
+    //  - rememberSaveable: sobrevive a la rotación. Si el operador gira el teléfono, sigue en la misma pestaña.
+    //  - remember: se pierde al rotar. `toConfirm` usa remember porque UiEvent.SendCommand no se puede
+    //    guardar en un Bundle; si se gira con el diálogo abierto, el diálogo se cierra y la orden NO se envía.
     var tab by rememberSaveable { mutableStateOf(Tab.PANEL) }
     var toConfirm by remember { mutableStateOf<UiEvent.SendCommand?>(null) }
     var showSimPanel by rememberSaveable { mutableStateOf(false) }
@@ -113,6 +132,8 @@ private fun MainScreen(state: UiState, history: List<HistoryEvent>, onEvent: (Ui
 
     // Las órdenes con consecuencias difíciles de revertir piden confirmación.
     // La detención no: tiene que salir con un solo toque.
+    // Iniciar, cancelar o regresar mueven al robot físicamente, así que antes de enviarlas mostramos un
+    // resumen de lo que va a pasar. Evita que un toque accidental saque al robot de la base.
     val request: (UiEvent.SendCommand) -> Unit = { command ->
         when (command.type) {
             CommandType.START_MISSION, CommandType.CANCEL_MISSION, CommandType.RETURN_TO_SAFE_POINT -> toConfirm = command
@@ -120,6 +141,9 @@ private fun MainScreen(state: UiState, history: List<HistoryEvent>, onEvent: (Ui
         }
     }
 
+    // Botón/gesto Atrás: primero vuelve al Panel en vez de cerrar la app. Así el operador no pierde la
+    // supervisión por un gesto involuntario. Si igual sale, la Activity termina (onPause → onStop →
+    // onDestroy) y el ViewModel se libera (onCleared).
     BackHandler(enabled = tab != Tab.PANEL) { tab = Tab.PANEL }
 
     Scaffold(
@@ -152,6 +176,9 @@ private fun MainScreen(state: UiState, history: List<HistoryEvent>, onEvent: (Ui
                         }
                     },
                 )
+                // Lo más importante queda fijo arriba en todas las pestañas: el estado de conexión, el aviso
+                // de datos viejos, la última orden y el botón de detener, para que el operador no tenga
+                // que buscarlos en una emergencia.
                 if (state.stale) StaleBanner(state)
                 CommandStrip(state, onStop = { onEvent(UiEvent.SendCommand(CommandType.OPERATIONAL_STOP)) })
                 HorizontalDivider(color = Hmi.Outline)
@@ -234,6 +261,11 @@ private fun MainScreen(state: UiState, history: List<HistoryEvent>, onEvent: (Ui
     }
 }
 
+/**
+ * Aviso de datos viejos. Aparece cuando hace más de 3 s que no llega telemetría: dice cuánto hace y
+ * a qué hora fue el último dato. Sin este aviso la pantalla seguiría mostrando el último estado como
+ * si fuera actual, y el operador podría creer que el robot está quieto cuando en realidad se movió.
+ */
 @Composable
 private fun StaleBanner(state: UiState) {
     Row(
@@ -251,7 +283,11 @@ private fun StaleBanner(state: UiState) {
     }
 }
 
-/** Franja fija: estado de la última orden y acceso a la detención desde cualquier pestaña. */
+/**
+ * Franja fija: estado de la última orden y acceso a la detención desde cualquier pestaña.
+ * Muestra si la última orden está pendiente (spinner), aceptada, rechazada o sin respuesta. Así el
+ * operador sabe si el robot recibió lo que pidió y no repite la orden por las dudas.
+ */
 @Composable
 private fun CommandStrip(state: UiState, onStop: () -> Unit) {
     val last = state.commands.firstOrNull()
@@ -309,6 +345,7 @@ private fun CommandStrip(state: UiState, onStop: () -> Unit) {
     }
 }
 
+/** Panel exclusivo de la demo: fuerza escenarios (corte de enlace, rechazo, batería, obstáculo, intruso). */
 @Composable
 private fun SimulationPanel(state: UiState, onEvent: (UiEvent) -> Unit, close: () -> Unit) {
     val opState = state.telemetry?.opState

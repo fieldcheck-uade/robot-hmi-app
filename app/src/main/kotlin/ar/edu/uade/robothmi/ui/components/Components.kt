@@ -52,6 +52,19 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+/*
+ * Componentes reutilizables de la HMI.
+ *
+ * Ningún componente guarda estado propio: reciben los valores a mostrar y una función para avisar
+ * los clics. Tampoco conocen al ViewModel ni al Repository. Por eso el mismo AlertCard o CommandButton
+ * se usa en el Panel, en Control y en Alertas sin duplicar código.
+ * El estado siempre se muestra con ícono + texto + color, nunca solo con color, para que se entienda
+ * aunque el operador no distinga bien los colores. Los botones de orden miden al menos 64 dp de alto
+ * para tocarlos sin errores, incluso con guantes.
+ *
+ * java.time (Instant, DateTimeFormatter) se usa directo porque minSdk = 26; con un minSdk menor
+ * haría falta API desugaring.
+ */
 private val clockFormat = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault())
 private val dateFormat = DateTimeFormatter.ofPattern("dd/MM HH:mm:ss").withZone(ZoneId.systemDefault())
 
@@ -137,7 +150,11 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier, trailing: (@Compos
     }
 }
 
-/** Un dato de telemetría. Si el dato es antiguo se atenúa para que no se lea como vigente. */
+/**
+ * Un dato de telemetría. Si el dato es antiguo se atenúa para que no se lea como vigente.
+ * Lo que muestra la app no siempre es el estado actual del robot: es lo último que informó. Atenuar el
+ * valor le avisa al operador que no debe tomar decisiones como si ese número fuera de ahora.
+ */
 @Composable
 fun MetricTile(
     label: String,
@@ -190,6 +207,10 @@ fun MetricTile(
 /**
  * Botón de orden. Cuando la orden no está habilitada muestra el motivo en lugar de
  * limitarse a quedar gris.
+ *
+ * El botón NO decide si está habilitado: recibe la decisión ya tomada en [availability], calculada
+ * por CommandRules. Así la regla está en un solo lugar y todos los botones de una misma orden se
+ * comportan igual. El botón solo avisa que el usuario quiere enviar la orden con [onClick].
  */
 @Composable
 fun CommandButton(
@@ -230,6 +251,10 @@ fun CommandStatusChip(status: CommandStatus, modifier: Modifier = Modifier) {
     StatusChip(status.label, status.tone(), status.icon(), modifier)
 }
 
+/**
+ * Una orden con su desenlace (pendiente/confirmada/rechazada/sin respuesta) y el motivo.
+ * Sirve para que el operador revise qué pidió y qué contestó el robot en cada caso.
+ */
 @Composable
 fun CommandRow(record: CommandRecord, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth().padding(vertical = 8.dp)) {
@@ -262,6 +287,11 @@ data class AlertAction(
     val onClick: () -> Unit,
 )
 
+/**
+ * Tarjeta de alerta. Está armada para que el operador pueda actuar sin pensar demasiado: el título dice
+ * qué pasó, el detalle qué implica, y debajo están las acciones seguras posibles (por ejemplo
+ * "Regresar a base"). Reconocer la alerta también es una orden al robot, con su propia disponibilidad.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AlertCard(

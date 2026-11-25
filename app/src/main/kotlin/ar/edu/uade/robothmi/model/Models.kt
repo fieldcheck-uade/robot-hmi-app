@@ -1,5 +1,15 @@
 package ar.edu.uade.robothmi.model
 
+/*
+ * Modelo de dominio de la app: lo comparten todas las capas.
+ *
+ * Son data class inmutables (todo `val`): para cambiar algo se crea una copia con copy(...). Lo hacemos
+ * así porque el StateFlow solo avisa cuando recibe un objeto distinto; si modificáramos el mismo objeto,
+ * la pantalla no se enteraría del cambio.
+ * Los enums tienen un `label` con el texto que ve el operador ("Patrullando", "Regresando a base"),
+ * no jerga técnica. No son tablas de Room: lo que se guarda en la base tiene su propia clase (HistoryDb.kt).
+ */
+
 // ---------- Robot y misiones ----------
 
 enum class RobotAvailability { AVAILABLE, MAINTENANCE }
@@ -28,8 +38,13 @@ data class MissionPlan(
 
 // ---------- Estado ----------
 
+// LOST no es lo mismo que DISCONNECTED: en LOST la sesión sigue abierta pero no llegan datos, así que
+// lo que se ve en pantalla es viejo. La app lo usa para avisar y para bloquear las órdenes no seguras.
 enum class ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, LOST }
 
+// Qué está haciendo el robot. Usamos un enum y no varios booleanos (isMoving, isPaused…) porque
+// con booleanos podrían quedar combinaciones imposibles, como "patrullando" y "detenido" a la vez.
+// Cada estado tiene su texto, así el operador nunca ve un "Procesando…" genérico.
 enum class OperationalState(val label: String) {
     IDLE("En espera"),
     PATROLLING("Patrullando"),
@@ -59,6 +74,11 @@ data class MissionStatus(
     val nextCheckpoint: String?,
 )
 
+/**
+ * Foto del estado del robot en un instante, tal como lo informa él. Agrupa comunicación, energía,
+ * estado, ubicación y datos del servicio de vigilancia. `timestampMs` es clave: con él la app calcula
+ * cuánto hace que llegó el dato y decide si mostrarlo como vigente o como "último conocido".
+ */
 data class Telemetry(
     val robotId: String,
     val seq: Long,
@@ -109,6 +129,9 @@ data class Alert(
 
 // ---------- Comandos ----------
 
+// `label`: texto para el operador. `wire`: nombre en el contrato de mensajes con el robot
+// (docs/contrato-mensajes.md). Pausar, cancelar y detener son órdenes distintas a propósito: pausar se
+// puede retomar, cancelar termina la ronda y la detención frena al robot en cualquier situación.
 enum class CommandType(val label: String, val wire: String) {
     START_MISSION("Iniciar misión", "start_mission"),
     PAUSE_MISSION("Pausar misión", "pause_mission"),
@@ -119,6 +142,11 @@ enum class CommandType(val label: String, val wire: String) {
     ACK_ALERT("Reconocer alerta", "ack_alert"),
 }
 
+/**
+ * En qué quedó una orden. Usamos cuatro estados y no un booleano "ok" porque enviar una orden no es
+ * lo mismo que el robot la acepte: PENDING (enviada, sin respuesta aún), CONFIRMED (el robot la aceptó),
+ * REJECTED (la rechazó y dijo por qué), NO_RESPONSE (venció el tiempo: no se sabe si llegó).
+ */
 enum class CommandStatus(val label: String) {
     PENDING("Pendiente"),
     CONFIRMED("Confirmada"),
@@ -157,6 +185,8 @@ data class HistoryEvent(
 )
 
 // ---------- Simulación ----------
+
+// Solo para la demo (ver SimulationControls).
 
 data class SimulationSettings(
     val linkDown: Boolean = false,

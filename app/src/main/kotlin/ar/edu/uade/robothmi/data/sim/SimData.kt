@@ -5,7 +5,11 @@ import ar.edu.uade.robothmi.model.MissionPlan
 import ar.edu.uade.robothmi.model.RobotAvailability
 import ar.edu.uade.robothmi.model.RobotInfo
 
-/** Datos fijos del escenario simulado: flota y rondas disponibles. */
+/**
+ * Datos fijos del escenario simulado: flota y rondas disponibles.
+ * En una app real vendrían del backend (API/gateway). Nombres en el vocabulario del
+ * usuario ("Ronda rápida de muelles") en lugar de IDs técnicos, que quedan solo en `id`.
+ */
 object SimData {
     private const val SITE = "Centro logístico Pilar · Nave 1"
 

@@ -38,13 +38,22 @@ import ar.edu.uade.robothmi.ui.components.ThemeToggleButton
 import ar.edu.uade.robothmi.ui.theme.Hmi
 import ar.edu.uade.robothmi.ui.theme.Tone
 
+/**
+ * Pantalla de entrada: elegir el robot a supervisar.
+ *
+ * No se conecta a nada por su cuenta: al tocar un robot envía UiEvent.SelectRobot y la conexión la
+ * hace el Repository. La pantalla solo refleja en qué estado está cada robot.
+ * Cada robot muestra un estado claro (Disponible / Conectando… / En mantenimiento) con texto e ícono.
+ * Los que están en mantenimiento se ven atenuados y no se pueden tocar, así el operador no intenta
+ * conectarse a un equipo que no va a responder.
+ */
 @Composable
 fun RobotSelectScreen(state: UiState, onEvent: (UiEvent) -> Unit) {
     val connecting = state.connection == ConnectionState.CONNECTING
     Column(
         Modifier
             .fillMaxSize()
-            .safeDrawingPadding()
+            .safeDrawingPadding() // edge-to-edge (MainActivity): no dibujar debajo de las barras del sistema
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
